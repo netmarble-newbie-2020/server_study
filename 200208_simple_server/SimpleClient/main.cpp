@@ -24,17 +24,48 @@ namespace ERROR_UTIL
 	}
 }
 
+// single mode
+void RenderScene(_Pos xPos)
+{
+	system("cls"); //ÏΩòÏÜîÌôîÎ©¥ ÏßÄÏö∞Í∏∞
+
+	std::cout << "\n";
+	std::cout << "\n";
+	std::cout << "\n";
+	std::cout << "\n";
+
+	{
+		for(int i = 0; i < xPos; ++i)
+		{
+			std::cout << "  ";			
+		}
+
+		std::cout << "‚óé\n";
+	}
+
+	// under map
+	for (int i = 0; i < MAX_MAP_SIZE; ++i)
+	{
+		std::cout << "‚ñ†";
+	}
+	std::cout << "\n";
+	std::cout << "pos : " << xPos;
+	std::cout << "\n";
+	std::cout << "\n";
+}
+
+// multi mode
 void RenderScene(_Key myKey, PACKET::SERVER_TO_CLIENT::ALL_OBJECT_INFO packet)
 {
-	system("cls"); //ƒ‹º÷»≠∏È ¡ˆøÏ±‚
-	// ≥Î∞°¥Ÿ...
+	system("cls"); //ÏΩòÏÜîÌôîÎ©¥ ÏßÄÏö∞Í∏∞
+	// ÎÖ∏Í∞ÄÎã§...
 
 	std::cout << "\n";
 	std::cout << "\n";
 	std::cout << "\n";
 	std::cout << "\n";
 
-	//πËø≠Sortø¿πŸ¡ˆ..
+	//Î∞∞Ïó¥SortÏò§Î∞îÏßÄ..
 	std::vector<std::pair<_Key, _Pos>> userCont;
 	for (int i = 0; i < MAX_USER; ++i)
 	{
@@ -53,14 +84,14 @@ void RenderScene(_Key myKey, PACKET::SERVER_TO_CLIENT::ALL_OBJECT_INFO packet)
 		{
 			if (userCont[index].second == i)
 			{
-				// ∏ﬁ¿Œ ƒ≥∏Ø≈Õ ¿œ¡§ ∑ª¥ı∏µ æ»µ… ºˆ ¿÷¿Ω.. ±Õ¬˙æ∆..
+				// Î©îÏù∏ Ï∫êÎ¶≠ÌÑ∞ ÏùºÏ†ï Î†åÎçîÎßÅ ÏïàÎê† Ïàò ÏûàÏùå.. Í∑ÄÏ∞ÆÏïÑ..
 				if (userCont[index].first == myKey)
 				{
-					std::cout << "°›";
+					std::cout << "‚óé";
 				}
 				else
 				{
-					std::cout << "°‹";
+					std::cout << "‚óè";
 				}
 
 				if (++index == userCont.size()) break;
@@ -75,7 +106,7 @@ void RenderScene(_Key myKey, PACKET::SERVER_TO_CLIENT::ALL_OBJECT_INFO packet)
 
 	for (int i = 0; i < MAX_MAP_SIZE; ++i)
 	{
-		std::cout << "°·";
+		std::cout << "‚ñ†";
 	}
 	std::cout << "\n";
 	std::cout << "pos : " << packet.position[myKey];
@@ -84,7 +115,65 @@ void RenderScene(_Key myKey, PACKET::SERVER_TO_CLIENT::ALL_OBJECT_INFO packet)
 	std::cout << "\n";
 }
 
-int main()
+void SingleMode()
+{
+	SOCKET mySocket;
+	_Pos myXPos;
+
+	// init network
+	{
+#pragma region [// ÏúàÏÜç Ï¥àÍ∏∞Ìôî]
+		WSADATA wsa;
+		if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+			return false;
+#pragma endregion
+
+#pragma region [ socket() ]
+		if (mySocket = socket(AF_INET, SOCK_STREAM, 0); mySocket == INVALID_SOCKET) ERROR_UTIL::Error("socket()");
+#pragma endregion
+
+#pragma region [ connect() ]
+		static SOCKADDR_IN serverAddr;
+		ZeroMemory(&serverAddr, sizeof(serverAddr));
+		serverAddr.sin_family = AF_INET;
+		serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+		serverAddr.sin_port = htons(SERVER_LISTEN_PORT_NUMBER);
+		int retVal = connect(mySocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
+		if (retVal == SOCKET_ERROR) ERROR_UTIL::Error("bind()");
+#pragma endregion
+	}
+
+	// Recv Add Object once
+	{
+		PACKET::SERVER_TO_CLIENT_SINGLE::ADD_OBJECT packet;
+		recv(mySocket, reinterpret_cast<char*>(&packet), sizeof(packet), 0);
+		myXPos = packet.xPos;
+	}
+
+	// gameLoop
+	while (7)
+	{
+		rewind(stdin);
+		std::cout << "Î∞©Ìñ•ÏùÑ ÏûÖÎ†•Ìï¥Ï£ºÏÑ∏Ïöî. a = left, d = right " << std::endl;
+		char inputtedChar;
+		std::cin >> inputtedChar;
+
+		{
+			PACKET::CLIENT_TO_SERVER_SINGLE::MOVE_OBJECT packet;
+			packet.dir = inputtedChar == 'a' ? DIRECTION::LEFT : DIRECTION::RIGHT;
+			send(mySocket, reinterpret_cast<char*>(&packet), sizeof(packet), 0);
+		}
+
+		{
+			PACKET::SERVER_TO_CLIENT_SINGLE::MOVE_OBJECT packet;
+			recv(mySocket, reinterpret_cast<char*>(&packet), sizeof(packet), 0);
+			myXPos = xPos;
+			RenderScene(myXPos);
+		}
+	}
+}
+
+void MultiMode()
 {
 	SOCKET mySocket;
 	_Key myKey;
@@ -92,7 +181,7 @@ int main()
 
 	// init network
 	{
-#pragma region [// ¿©º” √ ±‚»≠]
+#pragma region [// ÏúàÏÜç Ï¥àÍ∏∞Ìôî]
 		WSADATA wsa;
 		if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 			return false;
@@ -117,7 +206,7 @@ int main()
 	{
 		PACKET::SERVER_TO_CLIENT::ADD_OBJECT addObject;
 		recv(mySocket, reinterpret_cast<char*>(&addObject), sizeof(addObject), 0);
-		std::cout << "≥ª ≈∞∞™¿∫ : " << addObject.key;
+		std::cout << "ÎÇ¥ ÌÇ§Í∞íÏùÄ : " << addObject.key;
 		myKey = addObject.key;
 		myXPos = addObject.xPos;
 	}
@@ -126,7 +215,7 @@ int main()
 	while (7)
 	{
 		rewind(stdin);
-		std::cout << "πÊ«‚¿ª ¿‘∑¬«ÿ¡÷ººø‰. a = left, d = right " << std::endl;
+		std::cout << "Î∞©Ìñ•ÏùÑ ÏûÖÎ†•Ìï¥Ï£ºÏÑ∏Ïöî. a = left, d = right " << std::endl;
 		char inputtedChar;
 		std::cin >> inputtedChar;
 
@@ -143,5 +232,12 @@ int main()
 			RenderScene(myKey, packet);
 		}
 	}
+}
+
+
+int main()
+{
+	SingleMode();	
+	// MultiMode();
 }
 

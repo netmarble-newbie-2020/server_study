@@ -4,6 +4,26 @@
 
 struct UserInfo;
 
+class SingleSimpleServer
+{
+	static constexpr int RECV_BUFFER_SIZE = 100;
+
+public:
+	SingleSimpleServer();
+	~SingleSimpleServer();
+	
+	DISABLED_COPY(SingleSimpleServer)
+	DISABLED_MOVE(SingleSimpleServer)
+
+	void InitNetwork();
+	void Run();
+
+private:
+	SOCKET listenSocket;
+	std::atomic<bool> workerThreadLoopFlag;
+	_Pos xPos;
+};
+
 class SimpleServer
 {
 	static constexpr int RECV_BUFFER_SIZE = 100;
