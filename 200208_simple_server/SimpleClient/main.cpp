@@ -4,7 +4,7 @@
 
 namespace ERROR_UTIL
 {
-	_NORETURN static void Error(std::string_view msg)
+	_NORETURN static void Error(const std::string_view msg)
 	{
 		LPVOID lpMsgBuf;
 		int errorCode = WSAGetLastError();
@@ -25,9 +25,9 @@ namespace ERROR_UTIL
 }
 
 // single mode
-void RenderScene(_Pos xPos)
+void RenderScene(const _Pos xPos)
 {
-	system("cls"); //ì½˜ì†”í™”ë©´ ì§€ìš°ê¸°
+	system("cls"); //ÄÜ¼ÖÈ­¸é Áö¿ì±â
 
 	std::cout << "\n";
 	std::cout << "\n";
@@ -35,19 +35,20 @@ void RenderScene(_Pos xPos)
 	std::cout << "\n";
 
 	{
-		for(int i = 0; i < xPos; ++i)
+		for (int i = 0; i < xPos; ++i)
 		{
-			std::cout << "  ";			
+			std::cout << "  ";
 		}
 
-		std::cout << "â—Ž\n";
+		std::cout << "¡Ý\n";
 	}
 
 	// under map
 	for (int i = 0; i < MAX_MAP_SIZE; ++i)
 	{
-		std::cout << "â– ";
+		std::cout << "¡á";
 	}
+
 	std::cout << "\n";
 	std::cout << "pos : " << xPos;
 	std::cout << "\n";
@@ -55,17 +56,17 @@ void RenderScene(_Pos xPos)
 }
 
 // multi mode
-void RenderScene(_Key myKey, PACKET::SERVER_TO_CLIENT::ALL_OBJECT_INFO packet)
+void RenderScene(const _Key myKey, const PACKET::SERVER_TO_CLIENT::ALL_OBJECT_INFO packet)
 {
-	system("cls"); //ì½˜ì†”í™”ë©´ ì§€ìš°ê¸°
-	// ë…¸ê°€ë‹¤...
+	system("cls"); //ÄÜ¼ÖÈ­¸é Áö¿ì±â
+	// ³ë°¡´Ù...
 
 	std::cout << "\n";
 	std::cout << "\n";
 	std::cout << "\n";
 	std::cout << "\n";
 
-	//ë°°ì—´Sortì˜¤ë°”ì§€..
+	//¹è¿­Sort¿À¹ÙÁö..
 	std::vector<std::pair<_Key, _Pos>> userCont;
 	for (int i = 0; i < MAX_USER; ++i)
 	{
@@ -76,7 +77,7 @@ void RenderScene(_Key myKey, PACKET::SERVER_TO_CLIENT::ALL_OBJECT_INFO packet)
 	{
 		return a.second < b.second;
 	});
-	
+
 	{
 		int index = 0;
 		int oldX = -1;
@@ -84,14 +85,14 @@ void RenderScene(_Key myKey, PACKET::SERVER_TO_CLIENT::ALL_OBJECT_INFO packet)
 		{
 			if (userCont[index].second == i)
 			{
-				// ë©”ì¸ ìºë¦­í„° ì¼ì • ë Œë”ë§ ì•ˆë  ìˆ˜ ìžˆìŒ.. ê·€ì°®ì•„..
+				// ¸ÞÀÎ Ä³¸¯ÅÍ ÀÏÁ¤ ·»´õ¸µ ¾ÈµÉ ¼ö ÀÖÀ½.. ±ÍÂú¾Æ..
 				if (userCont[index].first == myKey)
 				{
-					std::cout << "â—Ž";
+					std::cout << "¡Ý";
 				}
 				else
 				{
-					std::cout << "â—";
+					std::cout << "¡Ü";
 				}
 
 				if (++index == userCont.size()) break;
@@ -106,7 +107,7 @@ void RenderScene(_Key myKey, PACKET::SERVER_TO_CLIENT::ALL_OBJECT_INFO packet)
 
 	for (int i = 0; i < MAX_MAP_SIZE; ++i)
 	{
-		std::cout << "â– ";
+		std::cout << "¡á";
 	}
 	std::cout << "\n";
 	std::cout << "pos : " << packet.position[myKey];
@@ -122,10 +123,10 @@ void SingleMode()
 
 	// init network
 	{
-#pragma region [// ìœˆì† ì´ˆê¸°í™”]
+#pragma region [// À©¼Ó ÃÊ±âÈ­]
 		WSADATA wsa;
 		if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-			return false;
+			ERROR_UTIL::Error("WSAStartup()");
 #pragma endregion
 
 #pragma region [ socket() ]
@@ -154,7 +155,7 @@ void SingleMode()
 	while (7)
 	{
 		rewind(stdin);
-		std::cout << "ë°©í–¥ì„ ìž…ë ¥í•´ì£¼ì„¸ìš”. a = left, d = right " << std::endl;
+		std::cout << "¹æÇâÀ» ÀÔ·ÂÇØÁÖ¼¼¿ä. a = left, d = right " << std::endl;
 		char inputtedChar;
 		std::cin >> inputtedChar;
 
@@ -167,8 +168,9 @@ void SingleMode()
 		{
 			PACKET::SERVER_TO_CLIENT_SINGLE::MOVE_OBJECT packet;
 			recv(mySocket, reinterpret_cast<char*>(&packet), sizeof(packet), 0);
-			myXPos = xPos;
+			myXPos = packet.xPos;
 			RenderScene(myXPos);
+			std::cout << "¹ÞÀº ÆÐÅ¶¿¡¼­ÀÇ xÀ§Ä¡´Â : " << packet.xPos << std::endl;
 		}
 	}
 }
@@ -181,10 +183,10 @@ void MultiMode()
 
 	// init network
 	{
-#pragma region [// ìœˆì† ì´ˆê¸°í™”]
+#pragma region [// À©¼Ó ÃÊ±âÈ­]
 		WSADATA wsa;
 		if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-			return false;
+			ERROR_UTIL::Error("WSAStartup()");
 #pragma endregion
 
 #pragma region [ socket() ]
@@ -206,7 +208,7 @@ void MultiMode()
 	{
 		PACKET::SERVER_TO_CLIENT::ADD_OBJECT addObject;
 		recv(mySocket, reinterpret_cast<char*>(&addObject), sizeof(addObject), 0);
-		std::cout << "ë‚´ í‚¤ê°’ì€ : " << addObject.key;
+		std::cout << "³» Å°°ªÀº : " << addObject.key;
 		myKey = addObject.key;
 		myXPos = addObject.xPos;
 	}
@@ -215,7 +217,7 @@ void MultiMode()
 	while (7)
 	{
 		rewind(stdin);
-		std::cout << "ë°©í–¥ì„ ìž…ë ¥í•´ì£¼ì„¸ìš”. a = left, d = right " << std::endl;
+		std::cout << "¹æÇâÀ» ÀÔ·ÂÇØÁÖ¼¼¿ä. a = left, d = right " << std::endl;
 		char inputtedChar;
 		std::cin >> inputtedChar;
 
@@ -237,7 +239,6 @@ void MultiMode()
 
 int main()
 {
-	SingleMode();	
+	SingleMode();
 	// MultiMode();
 }
-
