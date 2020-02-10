@@ -36,6 +36,27 @@ constexpr _Key MAX_USER = 10;
 
 namespace PACKET
 {
+	namespace SERVER_TO_CLIENT_SINGLE
+	{
+		struct ADD_OBJECT
+		{
+			_Pos xPos;
+		};
+
+		struct MOVE_OBJECT
+		{
+			_Pos xPos;
+		};
+	}
+
+	namespace CLIENT_TO_SERVER_SINGLE
+	{
+		struct MOVE_OBJECT
+		{
+			DIRECTION dir;
+		};
+	}
+	
 	namespace SERVER_TO_CLIENT
 	{
 		struct ADD_OBJECT
