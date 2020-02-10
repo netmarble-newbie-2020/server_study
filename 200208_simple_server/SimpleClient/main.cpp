@@ -115,11 +115,6 @@ void RenderScene(_Key myKey, PACKET::SERVER_TO_CLIENT::ALL_OBJECT_INFO packet)
 	std::cout << "\n";
 }
 
-int main()
-{
-	SingleMode();	
-}
-
 void SingleMode()
 {
 	SOCKET mySocket;
@@ -237,5 +232,12 @@ void MultiMode()
 			RenderScene(myKey, packet);
 		}
 	}
+}
+
+
+int main()
+{
+	SingleMode();	
+	// MultiMode();
 }
 
