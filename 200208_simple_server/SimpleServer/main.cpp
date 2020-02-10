@@ -2,10 +2,10 @@
 
 #include "SimpleServer.h"
 
-auto main() -> int
+int main()
 {
-	std::unique_ptr<SimpleServer> simpleServer
-		= std::make_unique<SimpleServer>();
+	SingleSimpleServer simpleServer;
+	// SimpleServer simpleServer;
 
-	simpleServer->Run();
+	simpleServer.Run();
 }

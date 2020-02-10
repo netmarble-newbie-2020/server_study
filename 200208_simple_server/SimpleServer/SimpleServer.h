@@ -54,7 +54,7 @@ private:
 
 namespace ERROR_UTIL
 {
-	_NORETURN static void Error(std::string_view msg)
+	_NORETURN static void Error(const std::string_view msg)
 	{
 		LPVOID lpMsgBuf;
 		int errorCode = WSAGetLastError();
